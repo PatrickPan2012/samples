@@ -1,0 +1,613 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>保险营销员每月收入计算器</title>
+		<style>
+			body
+			{
+				padding:0;
+				margin:0;
+			}
+			
+			.flex-container
+			{
+				display:flex;
+				justify-content: center;
+				
+			}
+			
+			.hidden
+			{
+				display:none;
+			}
+			
+			.field-container
+			{
+			    padding: 0 0 0 10px;
+			}
+		</style>
+		<script src="../../js/jquery.min.js"></script>
+		<script src="common.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.");
+				
+				(function bindEventHandlers(){
+					const orgDev='组织发展路径'
+				
+					$("#field-career").on('change',function(){
+						const career=$("#field-career").val()
+						if(career==orgDev){
+							$('#field-sale-title-container').addClass('hidden')
+							$('#field-org-title-container').removeClass('hidden')
+							
+							toggleMoABonusContainer()
+						}else{
+							$('#field-sale-title-container').removeClass('hidden')
+							$('#field-org-title-container').addClass('hidden')
+							$('#moa-bonus-container').addClass('hidden')
+							$('#mom-bonus-container').addClass('hidden')
+						}
+					})
+					
+					$("#field-org-title").on('change',toggleMoABonusContainer)
+					
+					$("#calculation").on('click',function(){
+						const city=$('#field-city').val()
+						console.log(`The value of "城市" is "${city}".`)
+						
+						const career=$('#field-career').val()
+						console.log(`The value of "发展路径" is "${career}".`)
+						
+						const title = getTitle(career)
+						console.log(`The value of "级别" is "${title}".`)
+						
+						const nop=getNumVal("field-nop")
+						if(!isNum(nop)||nop<=0||!Number.isInteger(nop)){
+							alert('请输入“NOP”，类型必须为正整数。')
+							clearField("field-nop")
+							return
+						}
+						console.log(`The value of "NOP" is "${nop}".`)
+						
+						const ticketSize=getNumVal("field-ticket-size")
+						if(!isNum(ticketSize)||ticketSize<=0){
+							alert('请输入“件均”，类型必须为正数。')
+							clearField("field-ticket-size")
+							return
+						}
+						console.log(`The value of "件均" is "${ticketSize}".`)
+						
+						const avgCom=getNumVal("field-avg-com")
+						if(!isNum(avgCom)||avgCom<=0||avgCom>100){
+							alert('请输入“平均佣金率”，类型必须为正数，且不能超过100。')
+							clearField("field-avg-com")
+							return
+						}
+						console.log(`The value of "平均佣金率" is "${avgCom}".`)
+						
+						const recommendedFyc=getNumVal("field-recommended-fyc")
+						if(!isNum(recommendedFyc)||recommendedFyc<0){
+							alert('请输入“直接推荐的营销员佣金”，类型必须为非负数。')
+							clearField("field-recommended-fyc")
+							return
+						}
+						console.log(`The value of "直接推荐的营销员佣金" is "${recommendedFyc}".`)
+						
+						/* =============================================================================== */
+						console.log("====================================")
+						
+						const cityLevel=getCityLevel(city)
+						console.log(`The value of "cityLevel" is "${cityLevel}".`)
+						
+						const dataForPieChart=[]
+						const fyc= {
+										name:'佣金',
+										num:nop*ticketSize*avgCom/100,
+										color:'#cb4539'
+								   }
+						console.log(`The value of "fyc.num" is "${fyc.num}".`)
+						dataForPieChart.push(fyc)
+						
+						const monthlyBonusOfRecommendingNewComers=getMonthlyBonusOfRecommendingNewComers(career,title,recommendedFyc)
+						console.log(`The value of "monthlyBonusOfRecommendingNewComers.num" is "${monthlyBonusOfRecommendingNewComers.num}".`)
+						dataForPieChart.push(monthlyBonusOfRecommendingNewComers)
+						
+						if(career==orgDev){
+							// 组织发展路径
+							
+							if(title=="助理业务经理"){
+								console.log("组织发展路径 - 助理业务经理特别津贴")
+								const monthlyBonusOfToBeMoA={
+																name:'助理业务经理特别津贴',
+																num:(fyc.num+recommendedFyc)*12/100,
+																color:'#fec655'
+															}
+								console.log(`The value of "monthlyBonusOfToBeMoA.num" is "${monthlyBonusOfToBeMoA.num}".`)
+								dataForPieChart.push(monthlyBonusOfToBeMoA)
+							}
+							
+							if(isMoA(title)){
+								// 月度管理奖金
+								console.log("组织发展路径 - 月度管理奖金")
+								const groupFyc=getNumVal('field-group-fyc')
+								if(!isNum(groupFyc)||groupFyc<0){
+									alert('请输入“直辖组直属保险营销员佣金总额”，类型必须为非负数。')
+									clearField("field-group-fyc")
+									return
+								}
+								console.log(`The value of "直辖组直属保险营销员佣金总额" is "${groupFyc}".`)
+								
+								const monthlyBonusPercentageOfBusinessLeader=getMonthlyBonusPercentageOfMoA(cityLevel,groupFyc)
+								console.log(`The value of "monthlyBonusPercentageOfBusinessLeader" is "${monthlyBonusPercentageOfBusinessLeader}".`)
+								
+								const monthlyBonusOfBusinessLeader={
+																		name:'月度管理奖',
+																		num:fyc.num*12/100+groupFyc*getMonthlyBonusPercentageOfMoA(cityLevel,groupFyc)/100,
+																		color:'#FF00FB'
+																   }
+								console.log(`The value of "monthlyBonusOfBusinessLeader.num" is "${monthlyBonusOfBusinessLeader.num}".`)
+								dataForPieChart.push(monthlyBonusOfBusinessLeader)
+								
+								// 新人辅导奖金
+								console.log("组织发展路径 - 新人辅导奖金")
+								const tutorialNum=getNumVal('field-tutorial-num')
+								if(!isNum(tutorialNum)||tutorialNum<0){
+									alert('请输入“辅导人数”，类型必须为非负数。')
+									clearField("field-tutorial-num")
+									return
+								}
+								console.log(`The value of "辅导人数" is "${tutorialNum}".`)
+								
+								const monthlyBonusOfTutorial={
+																name:'新人辅导奖',
+																num:tutorialNum*400,
+																color:'#8EFFF8'
+															 }
+								console.log(`The value of "monthlyBonusOfTutorial.num" is "${monthlyBonusOfTutorial.num}".`)
+								dataForPieChart.push(monthlyBonusOfTutorial)
+								
+								// 育成奖金
+								console.log("组织发展路径 - 育成奖金")
+								const field_bonusOfNurturingMoAGroup=getNumVal('field-nurture-moa-group-bonus')
+								if(!isNum(field_bonusOfNurturingMoAGroup)||field_bonusOfNurturingMoAGroup<0){
+									alert('请输入“育成奖金”，类型必须为非负数。')
+									clearField("field-nurture-moa-group-bonus")
+									return
+								}
+								const bonusOfNurturingMoAGroup={
+																name:'育成奖金',
+																num:field_bonusOfNurturingMoAGroup,
+																color:'#5FDE1F'
+															   }
+								console.log(`The value of "bonusOfNurturingMoAGroup.num" is "${bonusOfNurturingMoAGroup.num}".`)
+								dataForPieChart.push(bonusOfNurturingMoAGroup)
+								
+								// 新主管育成津贴
+								console.log("组织发展路径 - 新主管育成津贴")
+								const field_bonusOfNurturingMoA=getNumVal('field-nurture-moa-bonus')
+								if(!isNum(field_bonusOfNurturingMoA)||field_bonusOfNurturingMoA<0){
+									alert('请输入“育成奖金”，类型必须为非负数。')
+									clearField("field-nurture-moa-bonus")
+									return
+								}
+								const bonusOfNurturingMoA={
+															name:'育成奖金',
+															num:field_bonusOfNurturingMoA,
+															color:'#11608E'
+														  }
+								console.log(`The value of "bonusOfNurturingMoA.num" is "${bonusOfNurturingMoA.num}".`)
+								dataForPieChart.push(bonusOfNurturingMoA)
+							}
+							
+							if(isMoM(title)){
+								// 营业部业绩奖金
+								console.log("组织发展路径 - 营业部业绩奖金")
+								const departmentFyc=getNumVal('field-department-fyc')
+								if(!isNum(departmentFyc)||departmentFyc<0){
+									alert('请输入“营业部佣金总额”，类型必须为非负数。')
+									clearField("field-department-fyc")
+									return
+								}
+								
+								const monthlyBonusForBusinessOfMoM=getMonthlyBonusForBusinessOfMoM(cityLevel,title,departmentFyc)
+								console.log(`The value of "monthlyBonusForBusinessOfMoM.num" is "${monthlyBonusForBusinessOfMoM.num}".`)
+								dataForPieChart.push(monthlyBonusForBusinessOfMoM)
+								
+								// 育部奖金
+								console.log("组织发展路径 - 育部奖金")
+								const field_bonusOfNurturingDepartment=getNumVal('field-nurture-mom-department-bonus')
+								if(!isNum(field_bonusOfNurturingDepartment)||field_bonusOfNurturingDepartment<0){
+									alert('请输入“育部奖金”，类型必须为非负数。')
+									clearField("field-nurture-mom-department-bonus")
+									return
+								}
+								const bonusOfNurturingDepartment={
+															    	name:'育部奖金',
+															    	num:field_bonusOfNurturingDepartment,
+																	color:'#0707F3'
+															     }
+								console.log(`The value of "bonusOfNurturingDepartment.num" is "${bonusOfNurturingDepartment.num}".`)
+								dataForPieChart.push(bonusOfNurturingDepartment)
+								
+								// 新营业部育成津贴
+								console.log("组织发展路径 - 新营业部育成津贴")
+								const field_bonusOfNurturingMoM=getNumVal('field-nurture-mom-bonus')
+								if(!isNum(field_bonusOfNurturingMoM)||field_bonusOfNurturingMoM<0){
+									alert('请输入“新营业部育成津贴”，类型必须为非负数。')
+									clearField("field-nurture-mom-bonus")
+									return
+								}
+								const bonusOfNurturingMoM={
+																name:'新营业部育成津贴',
+																num:field_bonusOfNurturingMoM,
+																color:'#FF89DB'
+														  }
+								console.log(`The value of "bonusOfNurturingMoM.num" is "${bonusOfNurturingMoM.num}".`)
+								dataForPieChart.push(bonusOfNurturingMoM)
+							}
+						}else{
+							// 销售路径
+							const monthlyBonusOfSale=getMonthlyBonusOfSale(cityLevel,title,fyc.num)
+							console.log(`The value of "monthlyBonusOfSale.num" is "${monthlyBonusOfSale.num}".`)
+							dataForPieChart.push(monthlyBonusOfSale)
+						}
+						
+						drawPieChart(canvasId = 'canvas', jsonArray = dataForPieChart, offsetX = 210, offsetY = 180)
+					})
+					
+					/* =============================================================================== */
+					
+					const citiesLevel = (function buildCitiesLevel(){
+						const map=new Map()
+						map.set("北京",1)
+						map.set("上海",1)
+						map.set("广州",1)
+						map.set("深圳",1)
+						map.set("苏州",2)
+						map.set("南京",2)
+						map.set("无锡",2)
+						map.set("佛山",2)
+						map.set("其他",3)
+						return map
+					})();
+					
+					// 新人推荐奖金/主管增员奖金
+					function getMonthlyBonusOfRecommendingNewComers(career,title,recommendedFyc){
+						if(career==orgDev&&isMoA(title)){
+							return {
+										name:'主管增员奖金',
+										num:recommendedFyc*26/100,
+										color:'#47D0BC'
+								   }
+						}else{
+							return {
+										name:'新人推荐奖金',
+										num:recommendedFyc*12/100,
+										color:'#47D0BC'
+								   }
+						}
+					}
+					
+					function getCityLevel(city){
+						return citiesLevel.get(city)
+					}
+					
+					function getTitle(career){
+						if(career==orgDev){
+							return $("#field-org-title").val()
+						}else{
+							return $("#field-sale-title").val()
+						}
+					}
+					
+					function getNumVal(id){
+						const val=$(`#${id}`).val()
+						return parseFloat(val)
+					}
+					
+					function clearField(id){
+						$(`#${id}`).val('')
+					}
+					
+					function isNum(val){
+						return val.toString()!="NaN"
+					}
+					
+					function toggleMoABonusContainer(){
+						const title=$("#field-org-title").val()
+						if(isMoA(title)){
+							$('#moa-bonus-container').removeClass('hidden')
+						}else{
+							$('#moa-bonus-container').addClass('hidden')
+						}
+						
+						toggleMoMBonusContainer()
+					}
+					
+					function toggleMoMBonusContainer(){
+						const title=$("#field-org-title").val()
+						if(isMoM(title)){
+							$('#mom-bonus-container').removeClass('hidden')
+						}else{
+							$('#mom-bonus-container').addClass('hidden')
+						}
+					}
+					
+					/*==================== 销售路径 ====================*/
+					
+					// 每月业绩奖金
+					const titleLevelsOfSale=(function buildTitleLevelsOfSale(){
+						const map=new Map()
+						map.set("助理销售经理",0)
+						map.set("销售经理",1)
+						map.set("资深销售经理",2)
+						map.set("销售总监",3)
+						map.set("资深销售总监",4)
+						return map
+					})();
+					
+					const monthlyBonusPercentagesOfSale=[[0,0,0,0,0],
+														[8,12,14,16,18],
+														[10,16,18,20,22],
+														[12,20,22,24,26],
+														[14,22,24,26,28],
+														[16,24,28,30,32]]
+						
+					function getTitleLevelOfSale(title){
+						return titleLevelsOfSale.get(title)
+					}
+					
+					function getFycLevelOfMonthlyBonusOfSale(fyc,ratio){
+						if(0<fyc&&fyc<10000*ratio){
+							return 0
+						}else if(10000*ratio<=fyc&&fyc<20000*ratio){
+							return 1
+						}else if(20000*ratio<=fyc&&fyc<30000*ratio){
+							return 2
+						}else if(30000*ratio<=fyc&&fyc<40000*ratio){
+							return 3
+						}else if(40000*ratio<=fyc&&fyc<60000*ratio){
+							return 4
+						}else if(fyc>=60000*ratio){
+							return 5
+						}else{
+							// TODO 扣钱
+							return 0
+						}
+					}
+								
+					function getMonthlyBonusOfSale(cityLevel,title,fyc){
+						console.log("销售路径营销员 - 个人每月业绩奖金")
+						
+						const titleLevelOfSale=getTitleLevelOfSale(title)
+						console.log(`The value of "titleLevelOfSale" in "getMonthlyBonusOfSale" is "${titleLevelOfSale}".`)
+						
+						const ratio = (cityLevel==3?0.8:1)
+						console.log(`The value of "ratio" in "getMonthlyBonusOfSale" is "${ratio}".`)
+						
+						const fycLevelOfMonthlyBonusOfSale=getFycLevelOfMonthlyBonusOfSale(fyc,ratio)
+						console.log(`The value of "fycLevelOfMonthlyBonusOfSale" in "getMonthlyBonusOfSale" is "${fycLevelOfMonthlyBonusOfSale}".`)
+						
+						return {
+									name:'个人每月业绩奖金',
+									num:fyc*monthlyBonusPercentagesOfSale[fycLevelOfMonthlyBonusOfSale][titleLevelOfSale]/100,
+									color:'#9E63F8'
+							   }
+					}
+					
+					/*==================== 组织发展路径 ====================*/
+					
+					const titleLevelsOfOrgDev=(function buildTitleLevelsOfSale(){
+						const map=new Map()
+						map.set("正式业务员",0)
+						map.set("助理业务经理",1)
+						map.set("业务经理",2)
+						map.set("资深业务经理",3)
+						map.set("业务处经理",4)
+						map.set("资深业务处经理",5)
+						map.set("业务总监",6)
+						map.set("资深业务总监",7)
+						map.set("执行业务总监",8)
+						map.set("区域业务总监",9)
+						return map
+					})();
+					
+					// 判断是否业务主管
+					function isMoA(title){
+						const titleLevel=titleLevelsOfOrgDev.get(title)
+						return titleLevel>=2
+					}
+					
+					// 月度管理奖
+					function getMonthlyBonusPercentageOfMoA(cityLevel,groupFyc){
+						const ratio = (cityLevel==3?0.8:1)
+						if(0<groupFyc&&groupFyc<5000*ratio){
+							return 0
+						}else if(5000*ratio<=groupFyc&&groupFyc<15000*ratio){
+							return 16
+						}else if(15000*ratio<=groupFyc&&groupFyc<30000*ratio){
+							return 18
+						}else if(30000*ratio<=groupFyc&&groupFyc<60000*ratio){
+							return 22
+						}else if(groupFyc>=60000){
+							return 26
+						}
+					}
+					
+					// 判断是否业务总监
+					function isMoM(title){
+						const titleLevel=titleLevelsOfOrgDev.get(title)
+						return titleLevel>=6
+					}
+					
+					// 营业部业绩奖金
+					const monthlyBonusPercentagesOfDepartment=[[0,0,0,0],
+														[4.5,5.5,5.5,5.5],
+														[5,6,6,6],
+														[5.5,6.5,6.5,6.5],
+														[5.75,6.75,6.75,6.75],
+														[6,7,7,7]]
+														
+					const titleLevelsOfMoM=(function buildTitleLevelsOfMoM(){
+						const map=new Map()
+						map.set("业务总监",0)
+						map.set("资深业务总监",1)
+						map.set("执行业务总监",2)
+						map.set("区域业务总监",3)
+						return map
+					})();
+					
+					function getTitleLevelOfMoM(title){
+						return titleLevelsOfMoM.get(title)
+					}
+					
+					function getMonthlyBonusForBusinessOfMoM(cityLevel,title,departmentFyc){
+						console.log("组织发展路径 - 营业部业绩奖金")
+						
+						const titleLevelOfMoM=getTitleLevelOfMoM(title)
+						console.log(`The value of "titleLevelOfMoM" in "getMonthlyBonusPercentageForBusinessOfMoM" is "${titleLevelOfMoM}".`)
+						
+						const ratio = (cityLevel==3?0.8:1)
+						console.log(`The value of "ratio" in "getMonthlyBonusPercentageForBusinessOfMoM" is "${ratio}".`)
+						
+						const fycLevelOfMonthlyBonusOfMoM=getFycLevelOfMonthlyBonusOfMoM(departmentFyc,ratio)
+						console.log(`The value of "fycLevelOfMonthlyBonusOfMoM" in "getMonthlyBonusPercentageForBusinessOfMoM" is "${fycLevelOfMonthlyBonusOfMoM}".`)
+						
+						return {
+									name:'营业部业绩奖金',
+									num:departmentFyc*monthlyBonusPercentagesOfDepartment[fycLevelOfMonthlyBonusOfMoM][titleLevelOfMoM]/100,
+									color:'#89FFCC'
+							   }
+					}
+					
+					function getFycLevelOfMonthlyBonusOfMoM(fyc,ratio){
+						if(0<fyc&&fyc<150*1000*ratio){
+							return 0
+						}else if(150*1000*ratio<=fyc&&fyc<225*1000*ratio){
+							return 1
+						}else if(225*1000*ratio<=fyc&&fyc<300*1000*ratio){
+							return 2
+						}else if(300*1000*ratio<=fyc&&fyc<450*1000*ratio){
+							return 3
+						}else if(450*1000*ratio<=fyc&&fyc<600*1000*ratio){
+							return 4
+						}else if(fyc>=600*1000*ratio){
+							return 5
+						}else{
+							return 0
+						}
+					}
+					
+				})();
+			})
+		</script>
+	</head>
+	<body>
+		<div class="flex-container">
+			<div class="field-container">
+				<span>城市：</span>
+				<select id="field-city">
+					<option>北京</option>
+					<option>上海</option>
+					<option>广州</option>
+					<option>深圳</option>
+					<option>苏州</option>
+					<option>南京</option>
+					<option>无锡</option>
+					<option>佛山</option>
+					<option>其他</option>
+				</select>
+			</div>
+			<div class="field-container">
+				<span>发展路径：</span>
+				<select id="field-career">
+					<option>组织发展路径</option>
+					<option>销售路径</option>
+				</select>
+			</div>
+			<div id="field-org-title-container" class="field-container">
+				<span>级别：</span>
+				<select id="field-org-title">
+					<option>正式业务员</option>
+					<option>助理业务经理</option>
+					<option>业务经理</option>
+					<option>资深业务经理</option>
+					<option>业务处经理</option>
+					<option>资深业务处经理</option>
+					<option>业务总监</option>
+					<option>资深业务总监</option>
+					<option>执行业务总监</option>
+					<option>区域业务总监</option>
+				</select>
+			</div>
+			<div id="field-sale-title-container" class="field-container hidden">
+				<span>级别：</span>
+				<select id="field-sale-title">
+					<option>助理销售经理</option>
+					<option>销售经理</option>
+					<option>资深销售经理</option>
+					<option>销售总监</option>
+					<option>资深销售总监</option>
+				</select>
+			</div>
+			<div class="field-container">
+				<span>NOP：</span>
+				<input id="field-nop" type="text" value="5" style="width:30px;"/>
+			</div>
+			<div class="field-container">
+				<span>件均：</span>
+				<input id="field-ticket-size" type="text" value="4000" style="width:35px;"/>
+			</div>
+			<div class="field-container">
+				<span>平均佣金率（%）：</span>
+				<input id="field-avg-com" type="text" value="60" style="width:30px;"/>
+			</div>
+			<div class="field-container">
+				<span>直接推荐的营销员佣金：</span>
+				<input id="field-recommended-fyc" type="text" value="10000" style="width:40px;"/>
+			</div>
+		</div>
+		<div id="moa-bonus-container" class="flex-container hidden">
+			<div class="field-container">
+				<span>直辖组直属保险营销员佣金总额：</span>
+				<input id="field-group-fyc" type="text" value="28000" style="width:45px;"/>
+			</div>
+			<div class="field-container">
+				<span>辅导人数：</span>
+				<input id="field-tutorial-num" type="text" value="2" style="width:20px;"/>
+			</div>
+			<div class="field-container">
+				<span>育成奖金：</span>
+				<input id="field-nurture-moa-group-bonus" type="text" value="10000" style="width:45px;"/>
+			</div>
+			<div class="field-container">
+				<span>新主管育成津贴：</span>
+				<input id="field-nurture-moa-bonus" type="text" value="15000" style="width:45px;"/>
+			</div>
+		</div>
+		<div id="mom-bonus-container" class="flex-container hidden">
+			<div class="field-container">
+				<span>营业部佣金总额：</span>
+				<input id="field-department-fyc" type="text" value="280000" style="width:48px;"/>
+			</div>
+			<div class="field-container">
+				<span>育部奖金：</span>
+				<input id="field-nurture-mom-department-bonus" type="text" value="20000" style="width:45px;"/>
+			</div>
+			<div class="field-container">
+				<span>新营业部育成津贴：</span>
+				<input id="field-nurture-mom-bonus" type="text" value="5000" style="width:45px;"/>
+			</div>
+		</div>
+		<div class="flex-container">
+			<div class="field-container">
+				<button id="calculation">计算</button>
+			</div>
+		</div>
+		<div class="flex-container">
+			<canvas id="canvas" width="500" height="500">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+		</div>
+	</body>
+</html>

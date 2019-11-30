@@ -1,0 +1,137 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>主管增员奖金</title>
+		<link rel="stylesheet" type="text/css" href="../style.css">
+		<style>
+			.table-container
+			{
+				width: 28%;
+			}
+		</style>
+		<script src="../../../js/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				function getATTRank(att){
+					if(att<60){
+						return 0
+					}else{
+						return 1
+					}
+				}
+				
+				const activitiesManagementRanks=new Map()
+				activitiesManagementRanks.set("不达标",0)
+				activitiesManagementRanks.set("达标",1)
+				
+				const bonusPercentages=[[0,50],[50,100]]
+				
+				$("#calculation").on("click",function(){
+					let subordinateFYCSum=parseFloat($("#field-subordinate-fyc-sum").val())
+					console.log(`The sum of subordinate FYC is [${subordinateFYCSum}].`)
+					if(subordinateFYCSum.toString()=="NaN"){
+						alert("请输入新进保险营销员当月FYC，类型必须为数字。")
+						$("#field-subordinate-fyc-sum").val("")
+						return
+					}
+					
+					let att=parseFloat($("#field-att").val())
+					console.log(`The ATT is [${att}].`)
+					if(att.toString()=="NaN"){
+						alert("请输入个人当月标准出席率，类型必须为数字。")
+						$("#field-att").val("")
+						return
+					}
+					let attRank=getATTRank(att)
+					console.log(`The ATT rank is [${attRank}].`)
+					
+					let activitiesManagement=$("#field-activities-management").val()
+					console.log(`The activities management is [${activitiesManagement}].`)
+					
+					let activitiesManagementRank=activitiesManagementRanks.get(activitiesManagement)
+					console.log(`The activities management rank is [${activitiesManagementRank}].`)
+					
+					let bonusPercentage=bonusPercentages[attRank][activitiesManagementRank]
+					console.log(`主管增员奖金发放比例（X%）是${bonusPercentage}%。`)
+					
+					let bonus=subordinateFYCSum*26/100*bonusPercentage/100
+					console.log(`The bonus is [${bonus}].`)
+					
+					alert(`主管增员奖金是${bonus}元。`)
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div>
+			<h1>主管增员奖金</h1>
+			<p>对于业务主管本人直接招募的身份为DA/GA/HA的新进保险营销员，在他们的津贴期首12个月内若能获得DA/GA/HA津贴的，则业务主管可获得该新进保险营销员当月FYC的26%，并按业务主管当月的个人标准出席率及个人的活动量管理的完成情况，参照下表获得主管增员奖金。</p>
+			<div class="flex-container">
+				<div class="table-container">
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">业务主管个人</td>
+							<td style="border-bottom-style: none;">业务主管个人</td>
+							<td style="border-bottom-style: none;">主管增员奖金发放比例</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">当月标准出席率</td>
+							<td style="border-top-style: none;">当月活动量管理</td>
+							<td style="border-top-style: none;">（X%）</td>
+						</tr>
+						<tr>
+							<td>≥60%</td>
+							<td>达标</td>
+							<td>100%</td>
+						</tr>
+						<tr>
+							<td>≥60%</td>
+							<td>不达标</td>
+							<td>50%</td>
+						</tr>
+						<tr>
+							<td>&lt;60%</td>
+							<td>达标</td>
+							<td>50%</td>
+						</tr>
+						<tr>
+							<td>&lt;60%</td>
+							<td>不达标</td>
+							<td>0%</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div>
+				<ol>
+					<li>若DA/GA/HA通算补发此前未发放月份津贴的，则业务主管亦可补发此前未发放月份的增员奖金。</li>
+					<li>若被招募营销员能补发通算的DA/GA/HA津贴但补发津贴月的个人FYC为负数时，则业务主管在计提该营销员的增员奖金时不考虑主管当月个人标准出席率和活动量管理情况。</li>
+					<li>若业务主管在其直接招募的DA/GA/HA津贴期首12个月内降级为非业务主管的，则其不再享有主管增员奖金，而是自降级月份起按本制度规定享有新人推荐奖金（详见2.3）。</li>
+					<li>若业务主管直接招募的DA/GA/HA在津贴期首12个月内晋级为主管级别的，则其仍可享有该DA/GA/HA的主管增员奖金直至期满。</li>
+				</ol>
+			</div>
+			<div class="flex-container">
+				<span class="field-container">
+					<span>新进保险营销员当月FYC：</span>
+					<input id="field-subordinate-fyc-sum" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<span>个人当月标准出席率（%）：</span>
+					<input id="field-att" type="text" style="width:30;"/>
+				</span>
+				<span class="field-container">
+					<span>当月活动量管理：</span>
+					<select id="field-activities-management">
+						<option>达标</option>
+						<option>不达标</option>
+					</select>
+				</span>
+				<span class="field-container">
+					<button id="calculation">计算</button>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

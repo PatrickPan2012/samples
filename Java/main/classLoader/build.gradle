@@ -1,0 +1,25 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+	id 'eclipse'
+}
+
+dependencies {
+}
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use jcenter for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+task deleteClass(type:Delete) {
+	delete "lib/com"
+}
+
+task copyClass(type:Copy,dependsOn:[clean,deleteClass,compileJava]) {
+	from sourceSets.main.java.outputDir.absolutePath
+	include 'com/patrick/obj/Object*.class'
+	into "lib"
+}

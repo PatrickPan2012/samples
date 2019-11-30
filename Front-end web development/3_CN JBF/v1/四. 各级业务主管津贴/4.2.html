@@ -1,0 +1,162 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>年度管理奖金</title>
+		<link rel="stylesheet" type="text/css" href="../style.css">
+		<style>
+			.table-container
+			{
+				width: 30%;
+				margin: 0 10;
+			}
+		</style>
+		<script src="../../../js/jquery.min.js"></script>
+		<script src="../lib.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				function getBonusPercentage(cityRatio,subordinateFYCSum){
+					if(0<subordinateFYCSum&&subordinateFYCSum<60*1000*cityRatio){
+						return 0
+					}else if(60*1000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<180*1000*cityRatio){
+						return 3.5
+					}else if(180*1000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<300*1000*cityRatio){
+						return 5.5
+					}else if(300*1000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<480*1000*cityRatio){
+						return 6.5
+					}else if(subordinateFYCSum>=480*1000*cityRatio){
+						return 7
+					}else{
+						// TODO 扣钱
+						return 0
+					}
+				}
+				
+				$("#calculation").on("click",function(){
+					let subordinateFYCSum=parseFloat($("#field-subordinate-fyc-sum").val())
+					console.log(`The sum of subordinate FYC is [${subordinateFYCSum}].`)
+					if(subordinateFYCSum.toString()=="NaN"){
+						alert("请输入直属保险营销员年度FYC总额，类型必须为数字。")
+						$("#field-subordinate-fyc-sum").val("")
+						return
+					}
+					
+					let city=$("#field-city").val()
+					console.log(`The city is [${city}].`)
+					
+					let cityRatio=cityRatioMap.get(city)
+					console.log(`The city ratio is [${cityRatio}].`)
+					
+					let bonusPercentage=getBonusPercentage(cityRatio,subordinateFYCSum)
+					console.log(`各级业务主管年度管理奖金（%FYC）是[${bonusPercentage}%]。`)
+					
+					let bonus=subordinateFYCSum*bonusPercentage/100
+					console.log(`The bonus is [${bonus}].`)
+					
+					alert(`年度管理奖金是${bonus}元。`)
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div>
+			<h1>年度管理奖金</h1>
+			<p>倘业务主管之直属保险营销员（不含业务主管本人）的年度FYC总额达到下列指标，公司将依据下表给付业务主管年度管理奖金。</p>
+			<div class="flex-container">
+				<div class="table-container">
+					<h2>一/二线城市：</h2>
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">直辖组直属保险营销员</td>
+							<td style="border-bottom-style: none;">各级业务主管年度管理奖金</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">（不含业务主管本人）FYC总额</td>
+							<td style="border-top-style: none;">（%FYC）</td>
+						</tr>
+						<tr>
+							<td>0&lt;FYC&lt;60,000</td>
+							<td>0%</td>
+						</tr>
+						<tr>
+							<td>60,000≤FYC&lt;180,000</td>
+							<td>3.5%</td>
+						</tr>
+						<tr>
+							<td>180,000≤FYC&lt;300,000</td>
+							<td>5.5%</td>
+						</tr>
+						<tr>
+							<td>300,000≤FYC&lt;480,000</td>
+							<td>6.5%</td>
+						</tr>
+						<tr>
+							<td>480,000≤FYC</td>
+							<td>7.0%</td>
+						</tr>
+					</table>
+				</div>
+				<div class="table-container">
+					<h2>三线城市：</h2>
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">直辖组直属保险营销员</td>
+							<td style="border-bottom-style: none;">各级业务主管年度管理奖金</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">（不含业务主管本人）FYC总额</td>
+							<td style="border-top-style: none;">（%FYC）</td>
+						</tr>
+						<tr>
+							<td>0&lt;FYC&lt;48,000</td>
+							<td>0%</td>
+						</tr>
+						<tr>
+							<td>48,000≤FYC&lt;144,000</td>
+							<td>3.5%</td>
+						</tr>
+						<tr>
+							<td>144,000≤FYC&lt;240,000</td>
+							<td>5.5%</td>
+						</tr>
+						<tr>
+							<td>240,000≤FYC&lt;384,000</td>
+							<td>6.5%</td>
+						</tr>
+						<tr>
+							<td>384,000≤FYC</td>
+							<td>7.0%</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div>
+				<p>
+					<ol>
+						<li>倘保险营销员经过年度末的考核后仍能维持业务主管级别的，则公司根据其当年度内所持有效业务主管合同书的月份年化其直辖组直属保险营销员（不含业务主管本人）FYC的总额后，
+						按上表比例发放当年度的年度管理奖金。若年度FYC总额为负数时，则比照上表扣除相应的奖金。</li>
+						<li>倘保险营销员经过年度末的考核后降级或转任为非业务主管的，则不享有任何业务主管年度管理奖金。</li>
+						<li>本奖金的发放时间为次年的1月。</li>
+					</ol>
+				</p>
+			</div>
+			<div class="flex-container">
+				<span class="field-container">
+					<span>城市：</span>
+					<select id="field-city">
+						<option>一/二线</option>
+						<option>三线</option>
+					</select>
+				</span>
+				<span class="field-container">
+					<span>直属保险营销员年度FYC总额：</span>
+					<input id="field-subordinate-fyc-sum" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<button id="calculation">计算</button>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,219 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>月度管理奖金</title>
+		<link rel="stylesheet" type="text/css" href="../style.css">
+		<style>
+			.table-container
+			{
+				width: 30%;
+				margin: 0 10;
+			}
+		</style>
+		<script src="../../../js/jquery.min.js"></script>
+		<script src="../lib.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				function getBonusPercentage(cityRatio,subordinateFYCSum){
+					if(0<subordinateFYCSum&&subordinateFYCSum<5000*cityRatio){
+						return 0
+					}else if(5000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<15000*cityRatio){
+						return 16
+					}else if(15000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<30000*cityRatio){
+						return 18
+					}else if(30000*cityRatio<=subordinateFYCSum&&subordinateFYCSum<60000*cityRatio){
+						return 22
+					}else if(subordinateFYCSum>=60000*cityRatio){
+						return 26
+					}else{
+						// TODO 需要扣钱吗？
+						return 0
+					}
+				}
+				
+				function getATTRatio(att){
+					if(att<60){
+						return 0
+					}else{
+						return 1
+					}
+				}
+				
+				$("#calculation").on("click",function(){
+					let selfFYC=parseFloat($("#field-self-fyc").val())
+					console.log(`The self FYC is [${selfFYC}].`)
+					if(selfFYC.toString()=="NaN"){
+						alert("请输入个人月度FYC，类型必须为数字。")
+						$("#field-self-fyc").val("")
+						return
+					}
+					
+					let subordinateFYCSum=parseFloat($("#field-subordinate-fyc-sum").val())
+					console.log(`The sum of subordinate FYC is [${subordinateFYCSum}].`)
+					if(subordinateFYCSum.toString()=="NaN"){
+						alert("请输入直属保险营销员月度FYC总额，类型必须为数字。")
+						$("#field-subordinate-fyc-sum").val("")
+						return
+					}
+					
+					let att=parseFloat($("#field-att").val())
+					console.log(`The att is [${att}].`)
+					if(att.toString()=="NaN"){
+						alert("请输入个人标准出席率，类型必须为数字。")
+						$("#field-att").val("")
+						return
+					}
+					
+					let city=$("#field-city").val()
+					console.log(`The city is [${city}].`)
+					
+					let cityRatio=cityRatioMap.get(city)
+					console.log(`The city ratio is [${cityRatio}].`)
+					
+					let bonusPercentage=getBonusPercentage(cityRatio,subordinateFYCSum)
+					console.log(`各级业务主管月度管理奖金（X%FYC）是[${bonusPercentage}%].`)
+					
+					let attRatio=getATTRatio(att)
+					console.log(`调整因子（Y%）是[${attRatio*100}%]。`)
+					
+					let bonus=selfFYC*12/100*attRatio+subordinateFYCSum*bonusPercentage/100*attRatio
+					console.log(`The bonus is [${bonus}].`)
+					
+					alert(`月度管理奖金是${bonus}元。`)
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div>
+			<h1>月度管理奖金</h1>
+			<p>本奖金依计提基数区分为两部分：</p>
+			<p>
+				<ol>
+					<li>业务主管可根据其本人每月所赚取之FYC的12%，再乘以业务主管个人标准出席率（ATT）对应的调整因子（Y%），获得基于业务主管个人业绩部分的月度管理奖金。</li>
+					<li>业务主管可根据其直属保险营销员（不含业务主管本人）每月FYC的总额依下表所对应的奖金比例（X%），再乘以业务主管个人标准出席率（ATT）对应的调整因子（Y%），获得基于业务主管直辖组内组员业绩部分的月度管理奖金。</li>
+				</ol>
+			</p>
+			<div class="flex-container" style="margin: 0 0 20 0;">
+				<div class="table-container">
+					<h2>一/二线城市：</h2>
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">直辖组直属保险营销员</td>
+							<td style="border-bottom-style: none;">各级业务主管月度管理奖金</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">（不含业务主管本人）FYC总额</td>
+							<td style="border-top-style: none;">（X%FYC）</td>
+						</tr>
+						<tr>
+							<td>0&lt;FYC&lt;5,000</td>
+							<td>0%</td>
+						</tr>
+						<tr>
+							<td>5,000≤FYC&lt;15,000</td>
+							<td>16%</td>
+						</tr>
+						<tr>
+							<td>15,000≤FYC&lt;30,000</td>
+							<td>18%</td>
+						</tr>
+						<tr>
+							<td>30,000≤FYC&lt;60,000</td>
+							<td>22%</td>
+						</tr>
+						<tr>
+							<td>60,000≤FYC</td>
+							<td>26%</td>
+						</tr>
+					</table>
+				</div>
+				<div class="table-container">
+					<h2>三线城市：</h2>
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">直辖组直属保险营销员</td>
+							<td style="border-bottom-style: none;">各级业务主管月度管理奖金</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">（不含业务主管本人）FYC总额</td>
+							<td style="border-top-style: none;">（X%FYC）</td>
+						</tr>
+						<tr>
+							<td>0&lt;FYC&lt;4,000</td>
+							<td>0%</td>
+						</tr>
+						<tr>
+							<td>4,000≤FYC&lt;12,000</td>
+							<td>16%</td>
+						</tr>
+						<tr>
+							<td>12,000≤FYC&lt;24,000</td>
+							<td>18%</td>
+						</tr>
+						<tr>
+							<td>24,000≤FYC&lt;48,000</td>
+							<td>22%</td>
+						</tr>
+						<tr>
+							<td>48,000≤FYC</td>
+							<td>26%</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="flex-container">
+				<div style="width: 25%;">
+					<table border="1">
+						<tr>
+							<td style="border-bottom-style: none;">业务主管本人</td>
+							<td rowspan="2">调整因子（Y%）</td>
+						</tr>
+						<tr>
+							<td style="border-top-style: none;">个人标准出席率（ATT）</td>
+						</tr>
+						<tr>
+							<td>ATT&lt;60%</td>
+							<td>0%</td>
+						</tr>
+						<tr>
+							<td>60%≤ATT</td>
+							<td>100%</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div>
+				<ul>
+					<li>月度管理奖金 = 业务主管个人月度FYC × 12% × Y% + 业务主管直属保险营销员月度FYC总额 × X% × Y%（若业务主管个人月度FYC为负数时，则个人业绩部分的月度管理奖金出席率调整因子不再适用；若业务主管直属保险营销员月度FYC总额为负数时，则业务主管直辖组内组员业绩部分的月度管理奖金出席率调整因子不再适用。）</li>
+				<ul>
+			</div>
+			<div class="flex-container">
+				<span class="field-container">
+					<span>城市：</span>
+					<select id="field-city">
+						<option>一/二线</option>
+						<option>三线</option>
+					</select>
+				</span>
+				<span class="field-container">
+					<span>个人月度FYC：</span>
+					<input id="field-self-fyc" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<span>直属保险营销员月度FYC总额：</span>
+					<input id="field-subordinate-fyc-sum" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<span>个人标准出席率（%）：</span>
+					<input id="field-att" type="text" style="width:30;"/>
+				</span>
+				<span class="field-container">
+					<button id="calculation">计算</button>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

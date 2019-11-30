@@ -1,0 +1,42 @@
+body
+{
+	margin:0;
+}
+
+table
+{
+	border-spacing: 0;
+	text-align: center;
+}
+
+#details-container
+{
+	text-align: center;
+}
+
+.flex-container
+{
+	display:flex;
+	justify-content:center;
+}
+
+.tab
+{
+	border-style: solid;
+	border-width: 1px;
+	margin: 0 5px;
+	padding: 3px;
+}
+
+.tab:hover
+{
+	cursor:pointer;
+	border-color:#ffffff;
+	background-color: #A448E9;
+	color: #ffffff;
+}
+
+.hidden
+{
+	display:none;
+}

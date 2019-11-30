@@ -1,0 +1,134 @@
+﻿<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>SA - 正式业务员</title>
+		<meta charset="utf-8"/>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<script src="../../js/jquery.min.js"></script>
+		<script src="js/common.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				// Pie Chart	
+				drawPieChart(canvasId = 'pie-chart-detail', jsonArray = [{
+																			name:"季度续保奖金",
+																			num:30,
+																			color:'#cb4539'
+																		},{
+																			name:"季度业绩奖金",
+																			num:65,
+																			color:'#fec655'
+																		},{
+																			name:"新人推荐奖金",
+																			num:5,
+																			color:'#5FDE1F'
+																		}]);
+				
+				// 个人季度续保奖金
+				(function(){
+					const padding = 50
+					drawColumnChart(canvasId = 'col-chart-xubao-fyc', canvasPadding = padding, 
+										textOfY = 'FYC/元', data = [4000], 
+										color = '#2851D3', heightRatioOfMaxIndex = 0.8, heightRatioOfRect = 1.1, xOffsetOfIndexText = 35)
+					drawColumnChart(canvasId = 'col-chart-xubao-k2', canvasPadding = padding, 
+										textOfY = '季度末K2续保率/%', data = [75], 
+										color = '#31C229', heightRatioOfMaxIndex = 0.8, heightRatioOfRect = 1.1, xOffsetOfIndexText = 20)
+					drawColumnChart(canvasId = 'col-chart-xubao-att', canvasPadding = padding, 
+										textOfY = '个人标准出席率/%', data = [80], 
+										color = '#E2C935', heightRatioOfMaxIndex = 0.8, heightRatioOfRect = 1.1, xOffsetOfIndexText = 20)
+				})();
+				
+				// 个人季度业绩奖金
+				(function(){
+					const padding = 50
+					drawColumnChart(canvasId = 'col-chart-yeji-fyc', canvasPadding = padding, 
+										textOfY = 'FYC/元', data = [20000, 5000, 10000], 
+										color = '#B848DE', heightRatioOfMaxIndex = 0.8, heightRatioOfRect = 0.75, xOffsetOfIndexText = 35)
+					
+					drawColumnChart(canvasId = 'col-chart-yeji-att', canvasPadding = padding, 
+										textOfY = '个人标准出席率/%', data = [60], 
+										color = '#CE191B', heightRatioOfMaxIndex = 0.8, heightRatioOfRect = 1.1, xOffsetOfIndexText = 20)
+				})();
+				
+				// event handler
+				$(".tab").on('click',function(){
+					$('#chart-container').children().addClass('hidden')
+					const id = $(this).attr('data-id')
+					$(`#${id}`).removeClass('hidden')
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div class="flex-container">
+			<div>
+				<canvas id="pie-chart-detail" width="350" height="350">
+					对不起，您的浏览器版本过低，不支持HTML5.
+				</canvas>
+			</div>
+			<div id="details-container">
+				<h1>2019年7月</h1>
+				<table id="tb-details" border="1">
+					<tr>
+						<td>城市</td>
+						<td>上海</td>
+					</tr>
+					<tr>
+						<td>分公司</td>
+						<td>1086</td>
+					</tr>
+					<tr>
+						<td>营管处编号</td>
+						<td>AB12</td>
+					</tr>
+					<tr>
+						<td>营管处名称</td>
+						<td>XX</td>
+					</tr>
+					<tr>
+						<td>直辖组编号</td>
+						<td>G000123</td>
+					</tr>
+					<tr>
+						<td>营销员编号</td>
+						<td>000123456</td>
+					</tr>
+					<tr>
+						<td>营销员姓名</td>
+						<td>刘一</td>
+					</tr>
+					<tr>
+						<td>级别</td>
+						<td>SA - 正式业务员</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="flex-container">
+			<div class="tab" data-id="xubao">个人季度续保奖金</div>
+			<div class="tab" data-id="yeji">个人季度业绩奖金</div>
+		</div>
+		<div id="chart-container">
+			<div id="xubao">
+				<div class="flex-container">
+					<h1>个人季度续保奖金</h1>
+				</div>
+				<div class="flex-container">
+					<canvas id="col-chart-xubao-fyc" width="280" height="350">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+					<canvas id="col-chart-xubao-k2" width="280" height="350">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+					<canvas id="col-chart-xubao-att" width="280" height="350">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+				</div>
+			</div>
+			<div id="yeji" class="hidden">
+				<div class="flex-container">
+					<h1>个人季度业绩奖金</h1>
+				</div>
+				<div class="flex-container">
+					<canvas id="col-chart-yeji-fyc" width="280" height="350">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+					<canvas id="col-chart-yeji-att" width="280" height="350">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

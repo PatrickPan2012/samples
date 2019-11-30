@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>新主管育成津贴</title>
+		<link rel="stylesheet" type="text/css" href="../style.css">
+		<style></style>
+		<script src="../../../js/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				$("#calculation").on("click",function(){
+					let fyc_sum=parseFloat($("#field-fyc-sum").val())
+					console.log(`The sum of FYC is [${fyc_sum}].`)
+					if(fyc_sum.toString()=="NaN"){
+						alert("请输入新晋级业务经理个人FYC总额，类型必须为数字。")
+						$("#field-fyc-sum").val("")
+						return
+					}
+					
+					let bonus=fyc_sum*12/100
+					console.log(`新主管育成津贴是${bonus}。`)
+					alert(`新主管育成津贴是${bonus}元。`)
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div>
+			<h1>新主管育成津贴</h1>
+			<p>
+				若业务主管的直辖组内有营销员<b style="text-decoration: underline;">首次晋级</b>为业务经理（MOA1）的，则该业务主管可于新业务经理晋级当月一次性获得此新晋级业务经理过去12个月（不足12个月的以签约月开始）个人FYC总额的12%作为新主管育成津贴。
+			</p>
+			<div class="flex-container">
+				<span class="field-container">
+					<span>新晋级业务经理个人FYC总额：</span>
+					<input id="field-fyc-sum" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<button id="calculation">计算</button>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

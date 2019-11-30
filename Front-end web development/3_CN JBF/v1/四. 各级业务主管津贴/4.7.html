@@ -1,0 +1,63 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>业务主管MDRT特别奖金</title>
+		<link rel="stylesheet" type="text/css" href="../style.css">
+		<style></style>
+		<script src="../../../js/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				$("#calculation").on("click",function(){
+					let fyc_sum=parseFloat($("#field-fyc-sum").val())
+					console.log(`The sum of FYC is [${fyc_sum}].`)
+					if(fyc_sum.toString()=="NaN"){
+						alert("请输入FYC总额，类型必须为数字。")
+						$("#field-fyc-sum").val("")
+						return
+					}
+					
+					let bonus=fyc_sum*8/100
+					console.log(`MDRT特别奖金是${bonus}。`)
+					alert(`MDRT特别奖金是${bonus}元。`)
+				})
+			})
+		</script>
+	</head>
+	<body>
+		<div>
+			<h1>业务主管MDRT特别奖金</h1>
+			<p>
+				对于在本年度末维持或高于本年度初主管级别的各级业务主管，若能同时达成以下两项标准，则可在次年3月份一次性获得其在本年度担任业务主管级别期间本人之FYC总额的8%，作为其业务主管MDRT特别奖金。
+				<ol>
+					<li>本人于当年11月底或之前达成当年度MDRT会员标准且于次年2月底前完成MDRT会员注册；</li>
+					<li>本年度1月至11月期间累计至少达成11个本人直接招募活动新人人次。</li>
+				</ol>
+			</p>
+			<p>
+				①本人直接招募活动新人人次指：
+				<ul>
+					<li>在本年度1月至11月期间由业务主管本人直接招募；</li>
+					<li>首次以非业务主管身份与公司签约；</li>
+					<li>非参加FT计划；</li>
+					<li>在本年度1月至11月期间达到公司当时规定的活动人力标准；</li>
+					<li>在下一个年度的首月末仍持有效《保险营销员合同书》。</li>
+				</ul>
+			</p>
+			<p>②本年度末维持或高于本年度初主管级别指：在完成本年度的考核或晋级处理后，在下一个年度的首月末体现在公司系统中的主管级别须维持或高于本年度首月末体现在公司系统中的业务主管级别。</p>
+			<p>③若业务主管不符合上述“本年度末维持或高于本年度初主管级别”条件或降级为SA、助理业务经理，或转任各级销售路径营销员的，则其都不能享有业务主管MDRT特别奖金。</p>
+			<p>④对于本年度初为非业务主管级别的营销员，若其在年中晋级且于下一个年度的首月末体现在公司系统中为业务主管级别的，则其没有“本人直接招募活动新人人次”的要求。对于在年度内直接以主管身份签约的FT主管，若其于下一个年度的首月末体现在公司系统中的主管级别高于或维持其签约时级别的，则其亦没有“本人直接招募活动新人人次”的要求。</p>
+			<p>⑤业务主管在业务主管MDRT特别奖金发放时，须仍持有效《保险营销员合同书》。</p>
+			<div class="flex-container">
+				<span class="field-container">
+					<span>FYC总额：</span>
+					<input id="field-fyc-sum" type="text" style="width:60;"/>
+				</span>
+				<span class="field-container">
+					<button id="calculation">计算</button>
+				</span>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,432 @@
+﻿<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>实时收入</title>
+		<meta charset="utf-8"/>
+		<style>
+			body
+			{
+				margin:0;
+			}
+			
+			#personal-salary-container
+			{
+				display:flex;
+				justify-content: center;
+			}
+			
+			#details-container
+			{
+				text-align: center;
+			}
+			
+			#tb-details
+			{
+				border-collapse: collapse;
+			}
+			
+			#org-chart-container
+			{				
+				width:100%;
+				height:50%;
+			}
+			
+			.flex-container
+			{
+				display:flex;
+				justify-content:center;
+			}
+			
+			table
+			{
+				border-spacing: 0;
+				text-align: center;
+			}
+			
+			td
+			{
+				padding:0;
+				vertical-align: top;
+			}
+			
+			td div
+			{
+				display:inline-block;
+			}
+			
+			.title
+			{
+				text-align: center;
+				font-size: 24px;
+				font-weight: 700;
+				height: 40px;
+				line-height: 40px;
+				background-color: rgba(217,83,79,.8);
+				color: #fff;
+				border-radius: 4px 4px 0 0;
+				width:100px;
+			}
+			
+			.node
+			{
+				border-color: transparent;
+				border-width: 0 2px;
+				border-style: dashed;
+			}
+			
+			.downLine
+			{
+				background-color: rgba(217,83,79,.8);
+				height: 20px;
+				width: 2px;
+			}
+			
+			.rightLine
+			{
+				border-right: 1px solid rgba(217,83,79,.8);
+			}
+			
+			.leftLine
+			{
+				border-left: 1px solid rgba(217,83,79,.8);
+			}
+			
+			.topLine
+			{
+				border-top: 2px solid rgba(217,83,79,.8);
+			}
+			
+			#hint-container
+			{
+				display:none;
+				position:fixed;
+				border-radius: 4px 4px 0 0;
+				color:#fff;
+				background-color:#4682B4;
+			}
+			
+			#col-chart-container
+			{
+				width:100%;
+				height:500px;
+				
+				display:flex;
+				justify-content:center;
+			}
+		</style>
+		<script src="../../js/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				console.log("The page is ready.")
+				
+				// Pie Chart
+				let jsondata = [{
+									name:"业绩奖金",
+									num:32
+								},{
+									name:"管理奖金",
+									num:68
+								}]
+								
+				let colors = ["#cb4539","#fec655"]
+				let sum = 0
+				let lastsum = 0
+				let offset = 175
+				
+				let pieCanvas = document.getElementById("cav")
+				if(!cav){
+					return
+				}
+				
+				let pieCtx = pieCanvas.getContext("2d")
+				
+				for(let i=0;i<jsondata.length;i++){
+					sum+=jsondata[i].num
+				}
+				
+				//下一个起始
+				function lastSum(i){
+					lastsum=0 //重置为0
+					for (let j = 0; j < i; j++) {
+						lastsum+=jsondata[j].num
+					}
+				}
+				
+				//画饼图
+				//半径
+				const radius=100
+				function drawChart(){
+					for (let i = 0; i < jsondata.length;i++) {
+						lastSum(i)//上一个结束弧度就是下一个起始弧度
+						let startAngle= (Math.PI*2)*(lastsum/sum)//起始弧度
+						lastSum(i+1)
+						let endAngle=(Math.PI*2)*(lastsum/sum)//结束弧度
+						pieCtx.save()
+						pieCtx.fillStyle=colors[i]
+						pieCtx.beginPath()
+						pieCtx.moveTo(offset,offset)
+						pieCtx.arc(offset,offset,radius,startAngle,endAngle,false)
+						pieCtx.closePath()
+						pieCtx.fill()
+						pieCtx.restore()
+						drawText(startAngle,endAngle,jsondata[i].name,jsondata[i].num/sum)
+					}
+				}
+				
+				//绘制文本和线段
+				function drawText(s,e,jn,jsm){
+					//文字的x，y坐标计算
+					let x = Math.cos((s+e)/2)*(radius+60)+offset
+					let y = Math.sin((s+e)/2)*(radius+60)+offset
+					pieCtx.fillStyle="blue"
+					pieCtx.fillText(jn,x,y)
+					pieCtx.fillStyle="red"
+					//百分比精确到小数后两位
+					pieCtx.fillText((parseInt(jsm*10000)/100)+"%",x,y+20)
+					//绘制由每个饼指向文字的线段 
+					pieCtx.beginPath()
+					//各端点坐标由每块的起始弧度和结束弧度求平均后计算得出
+					pieCtx.moveTo(Math.cos((s+e)/2)*radius+offset,Math.sin((s+e)/2)*radius+offset)
+					pieCtx.lineTo( Math.cos((s+e)/2)*(radius+40)+offset, Math.sin((s+e)/2)*(radius+40)+offset)
+					pieCtx.closePath()
+					pieCtx.fillStyle="red"
+					pieCtx.stroke()
+				}
+				
+				drawChart()
+				
+				// Org Chart
+				let hintDiv=$("#hint-container")
+				
+				$(".title").on('mouseover',function(event){
+					hintDiv.css("display","block")
+					let fyc = $(this).attr("data-fyc")
+					hintDiv.text(`FYC: ${fyc}元`)
+					
+					hintDiv.css("top",event.clientY+3)
+					hintDiv.css("left",event.clientX+3)
+					
+					event.stopPropagation()
+				})
+				
+				$(".title").on('mouseout',function(){
+					hintDiv.css("display","none")
+					event.stopPropagation()
+				})
+				
+				// Column Chart
+				const colCanvas=document.getElementById('col-chart')
+				const colCtx=colCanvas.getContext('2d')
+			
+				const width = colCanvas.width
+				const height = colCanvas.height
+				const padding = 50
+				
+				const datas = [{name: '刘一', fyc: 36000, color: '#f45942'},
+								{name: '陈二', fyc: 32000, color: '#f4ff26'},
+								{name: '张三', fyc: 35000, color: '#6326ff'}, 
+								{name: '李四', fyc: 33000, color: '#26ff4d'},
+								{name: '王五', fyc: 30000, color: '#e526ff'}, 
+								{name: '赵六', fyc: 20000, color: '#00d6f7'}]
+				
+				// 原点坐标
+				const xAxisOfO = padding
+				const yAxisOfO = height - padding
+			
+				colCtx.beginPath()
+				colCtx.lineWidth = 1
+				
+				// x轴
+				colCtx.moveTo(xAxisOfO, yAxisOfO) 
+				colCtx.lineTo(width - padding, height - padding)
+				colCtx.stroke()
+				
+			
+				// y轴
+				colCtx.moveTo(xAxisOfO, yAxisOfO)
+				colCtx.lineTo(xAxisOfO, padding)
+				colCtx.stroke()
+				colCtx.fillText('FYC/元', xAxisOfO - 15, padding - 5)
+				
+				let maxHeight
+				
+				// y轴刻度及虚线
+				for(let i = 1, yAxis = yAxisOfO - 60; i < 7; i++, yAxis -= 60) {
+					if (i === 5) {
+						continue
+					}
+					
+					// 刻度
+					colCtx.beginPath()
+					colCtx.setLineDash([]);
+					colCtx.moveTo(xAxisOfO, yAxis)
+					colCtx.lineTo(xAxisOfO + 5, yAxis)
+					colCtx.stroke()
+					
+					colCtx.fillText(i * 10000, xAxisOfO - 35, yAxis + 3)
+					
+					// 虚线
+					colCtx.beginPath()
+					colCtx.setLineDash([1, 1]);
+					colCtx.moveTo(xAxisOfO + 5, yAxis)
+					colCtx.lineTo(width - padding, yAxis)
+					colCtx.stroke()
+					
+					if (i === 6) {
+						maxHeight = yAxisOfO - yAxis
+					}
+				}
+				
+				const rectangleWidth = 30
+				const columnSpace = 30
+				
+				// 柱状图及文字
+				for(let i = 0, xAxis = xAxisOfO + columnSpace; i < datas.length; i++, xAxis += (columnSpace + rectangleWidth)) {
+					// 柱状图
+					let rectangleHeight = datas[i].fyc / 60000 * maxHeight
+					let yAxis = yAxisOfO - rectangleHeight
+					colCtx.fillStyle=datas[i].color
+					colCtx.fillRect(xAxis, yAxis, rectangleWidth, rectangleHeight)
+					
+					// 文字
+					colCtx.fillStyle='#000000'
+					colCtx.fillText(datas[i].name, xAxis + 3, yAxis - 10)
+				}
+			})
+		</script>
+	</head>
+	<body>
+		<div id="personal-salary-container">
+			<div id="cav-container">
+				<canvas id="cav" width="350" height="350">
+					对不起，您的浏览器版本过低，不支持HTML5.
+				</canvas>
+			</div>
+			<div id="details-container">
+				<h1>月度业绩奖金</h1>
+				<table id="tb-details" border="1">
+					<tr>
+						<td>城市</td>
+						<td>上海</td>
+					</tr>
+										<tr>
+						<td>职位</td>
+						<td>销售总监</td>
+					</tr>
+					<tr>
+						<td>本月实时FYC总额</td>
+						<td>36,000</td>
+					</tr>
+					<tr>
+						<td>业绩奖金比例</td>
+						<td>24%</td>
+					</tr>
+					<tr>
+						<td>业绩奖金</td>
+						<td>8,640</td>
+					</tr>
+					<tr>
+						<td>提升业绩奖金比例还需FYC</td>
+						<td>4,000</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div id="org-chart-container" class="flex-container">
+			<table>
+				<tr>
+					<td colspan="6">
+						<div class="node">
+							<div class="title" data-fyc="36,000">刘一</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="6">
+						<div class="downLine"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="rightLine">&nbsp;</td>
+					<td class="leftLine topLine">&nbsp;</td>
+					<td class="rightLine topLine">&nbsp;</td>
+					<td class="leftLine topLine">&nbsp;</td>
+					<td class="rightLine topLine">&nbsp;</td>
+					<td class="leftLine">&nbsp;</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<table>
+							<tr>
+								<td colspan="4">
+									<div class="flex-container">
+										<div class="node">
+											<div class="title" data-fyc="32,000">陈二</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="4">
+									<div class="downLine"></div>
+								</td>
+							</tr>
+							<tr>
+								<td class="rightLine">&nbsp;</td>
+								<td class="leftLine topLine">&nbsp;</td>
+								<td class="rightLine topLine">&nbsp;</td>
+								<td class="leftLine">&nbsp;</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<div class="flex-container">
+										<div class="node">
+											<div class="title" data-fyc="30,000">王五</div>
+										</div>
+									</div>
+								</td>
+								<td colspan="2">
+									<div class="flex-container">
+										<div class="node">
+											<div class="title" data-fyc="20,000">赵六</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td colspan="2">
+						<table>
+							<tr>
+								<td>
+									<div class="flex-container">
+										<div class="node">
+											<div class="title" data-fyc="35,000">张三</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td colspan="2">
+						<table>
+							<tr>
+								<td>
+									<div class="flex-container">
+										<div class="node">
+											<div class="title" data-fyc="33,000">李四</div>
+										</div>
+									<div>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<div id="hint-container"></div>
+		</div>
+		<div class="flex-container">
+			<canvas id="col-chart" width="500" height="500">对不起，您的浏览器版本过低，不支持HTML5.</canvas>
+		</div>
+	</body>
+</html>

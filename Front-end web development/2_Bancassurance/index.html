@@ -1,0 +1,176 @@
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>
+			Life Protection - Citibank Malaysia 
+		</title>
+		
+		<style>
+			body
+			{
+				margin:0;
+				background-color:rgba(250,249,243,1);
+			}
+			
+			#banner
+			{
+				background:#004988 url(imgs/banner.jpg) repeat-x 0 0;
+				height: 86px;
+			}
+			
+			#logo
+			{
+				width: 131px;
+				height: 37px;
+				position: absolute;
+				top: 20px;
+				left: 10%;
+				background: url(imgs/logo.png) no-repeat 0 0;
+			}
+			
+			#body
+			{
+				width:65%; 
+				margin:30px auto;
+			}
+			
+			#title
+			{
+				font-size: 23px;
+				text-align: center;
+				font-weight: bold;
+				margin: 0 0 10 0;
+			}
+			
+			#products
+			{
+				width:100%;
+				overflow:auto;
+			}
+			
+			.product-wrapper
+			{
+				width:48%;
+				float:left;
+				padding:1% 1%;
+			}
+			
+			.product
+			{
+				background-color: #fff;
+				
+				border-top: 4px solid #004988;
+				
+				box-shadow: 0 2px 4px 0 rgba(0,0,0,0.12);
+			}
+			
+			.product:hover
+			{
+				cursor:pointer;
+				box-shadow: 0 2px 4px 0 black;
+			}
+			
+			.product-brief
+			{	
+				border-bottom: 1px solid rgb(219,218,212);
+				padding: 0 24 24 24;
+				
+				height:80px;
+			}
+			
+			.product-title
+			{
+				margin-bottom:8px;
+			}
+			
+			.product-title h4
+			{
+				padding-top:24px;
+				max-width:90%;
+				font-size:23px;
+				line-height:28px;
+				margin-top:0;
+				margin-bottom:0;
+			}
+			
+			p
+			{
+				font-size:15px;
+				line-height:20px;
+				margin-top:0;
+				margin-bottom:0;
+			}
+			
+			.product-detail
+			{
+				padding: 16 24;
+				border-bottom: 1px solid rgb(219,218,212);
+				
+				height:68px;
+			}
+			
+		</style>
+		
+		<script src="../js/jquery.min.js"></script>
+		<script>
+		$(document).ready(function(){
+			console.log("The page is ready.")
+			
+			let products=[{
+				name:"BONUS POWER PLAN",
+				category:"General Insurance",
+				brief:"Offer attractive potential returns in the long-term and the protection of life insurance.",
+				issueAge:"AGE 18 - 60",
+				benefitTerm:"1/3/30/90 DAY(S)"
+			},{
+				name:"WEALTH ELITE",
+				category:"General Insurance",
+				brief:"Preserves, enhances and allocates your wealth the way you choose",
+				issueAge:"AGE 18 - 70",
+				benefitTerm:"1/3/30/90 DAY(S)"
+			},{
+				name:"ADMIRE LIFE 2",
+				category:"General Insurance",
+				brief:"Give you a lifetime protection and stable returns to let you enjoy life with your loved ones.",
+				issueAge:"AGE 18 - 80",
+				benefitTerm:"1/3/30/90 DAY(S)"
+			}]
+			
+			products.forEach(function(e){
+				let title=$("<h4></h4>").text(e.name)
+				let titleWrapper=$("<div class='product-title'></div>").append(title)
+				let brief=$("<p></p>").text(e.category)
+				let briefWrapper=$("<div class='product-brief'></div>").append(titleWrapper).append(brief)
+						
+				let detail=$("<p></p>").text(e.brief)
+				let detailWrapper=$("<div class='product-detail'></div>").append(detail)
+						
+				let product=$("<div class='product'></div>").append(briefWrapper).append(detailWrapper)
+				let productWrapper=$("<div class='product-wrapper'></div>").append(product)
+						
+				let params=new URLSearchParams()
+				params.set('name',e.name)
+				params.set('category',e.category)
+				params.set('issueAge',e.issueAge)
+				params.set('brief',e.brief)
+				params.set('benefitTerm',e.benefitTerm)
+						
+				productWrapper.on('click',function(){
+					window.open('product.html?'+params.toString(),e.name)
+				})
+						
+				$("#products").append(productWrapper)
+			})
+		})
+		</script>
+	</head>
+	<body>
+		<div id="banner">
+			<div id="logo"></div>
+		</div>
+		<div id="body">
+			<div id="title">ALL LIFE PROTECTION PRODUCTS</div>
+			<div id="products"></div>
+		</div>
+	</body>
+</html>
